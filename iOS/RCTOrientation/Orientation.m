@@ -119,31 +119,22 @@ static UIInterfaceOrientationMask _orientationMask = UIInterfaceOrientationMaskA
 
 - (void)lockToOrientation:(UIInterfaceOrientation) newOrientation usingMask:(UIInterfaceOrientationMask) mask  {
     // set a flag so that no deviceOrientationDidChange events are sent to JS
-    _isLocking = YES;
-    NSString* orientation = @"orientation";
-    
-    UIInterfaceOrientation deviceOrientation = _lastDeviceOrientation;
-    
-    [Orientation setOrientation:mask];
-    
-    if (@available(iOS 16.0, *)) {
-       NSArray *array = [[[UIApplication sharedApplication] connectedScenes] allObjects];
-       UIWindowScene *scene = (UIWindowScene *)array[0];    UIWindowSceneGeometryPreferencesIOS *geometryPreferences = [[UIWindowSceneGeometryPreferencesIOS alloc] initWithInterfaceOrientations:mask];
-
-    [scene requestGeometryUpdateWithPreferences:geometryPreferences errorHandler:^(NSError * _Nonnull error) { }];
-   } else {
-       UIDevice* currentDevice = [UIDevice currentDevice];
-       [currentDevice setValue:@(UIInterfaceOrientationUnknown) forKey:orientation];
-       [currentDevice setValue:@(newOrientation) forKey:orientation];
-       // restore device orientation
-       [currentDevice setValue:@(deviceOrientation) forKey:orientation];
-   }
-    
-    [UIViewController attemptRotationToDeviceOrientation];
-    
-    [self sendEventWithName:@"lockDidChange" body:@{orientation: [self getOrientationStr:newOrientation]}];
-    
-    _isLocking = NO;
+   _isLocking = YES;
+   NSString* orientation = @"orientation";
+   
+   UIInterfaceOrientation deviceOrientation = _lastDeviceOrientation;
+   
+   [Orientation setOrientation:mask];
+   UIDevice* currentDevice = [UIDevice currentDevice];
+   
+   [currentDevice setValue:@(UIInterfaceOrientationUnknown) forKey:orientation];
+   [currentDevice setValue:@(newOrientation) forKey:orientation];
+   
+   [UIViewController attemptRotationToDeviceOrientation];
+   
+   [self sendEventWithName:@"lockDidChange" body:@{orientation: [self getOrientationStr:newOrientation]}];
+   
+   _isLocking = NO;
 }
 
 #else
